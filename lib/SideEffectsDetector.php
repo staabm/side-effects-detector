@@ -63,7 +63,7 @@ final class SideEffectsDetector {
                 continue;
             }
 
-            if ($this->isAnonymousFunctionOrClass($tokens, $i)) {
+            if ($this->isAnonymousFunction($tokens, $i)) {
                 continue;
             }
 
@@ -118,12 +118,12 @@ final class SideEffectsDetector {
         return null;
     }
 
-    private function isAnonymousFunctionOrClass(array $tokens, int $index): bool
+    private function isAnonymousFunction(array $tokens, int $index): bool
     {
         if (
             array_key_exists($index, $tokens)
             && is_array($tokens[$index])
-            && ($tokens[$index][0] === T_FUNCTION || $tokens[$index][0] === T_CLASS)
+            && $tokens[$index][0] === T_FUNCTION
         ) {
             $nextIndex = $index+1;
             while (

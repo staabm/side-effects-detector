@@ -43,7 +43,7 @@ var_dump($detector->hasSideEffects($code, $ignoreOutput=false)); // null
 
 ## Disclaimer
 
-This library is best used in cases where you want to analyze a give code does not or for sure contains side-effects.
+This library is best used in cases where you want to analyze a given code does not or for sure contains side-effects.
 
 It's a non goal to find the best possible answer for all cases.
 If you are in need of a fully fledged side-effect analysis, use more advanced tools like PHPStan.

@@ -1,4 +1,4 @@
-Small helper class to analyze php-code for side-effects.
+Analyzes php-code for side-effects.
 
 When code has no side-effects it can e.g. be used with `eval($code)` in the same process without interfering.
 

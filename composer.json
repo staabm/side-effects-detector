@@ -18,7 +18,7 @@
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^1.12.5",
         "phpunit/phpunit": "^9.6.21",
-        "symfony/var-dumper": "^5.4.43",
+        "symfony/var-dumper": "^7.1.5",
         "tomasvotruba/type-coverage": "0.2.5",
         "tomasvotruba/unused-public": "0.3.11"
     },

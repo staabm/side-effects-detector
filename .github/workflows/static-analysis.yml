@@ -15,8 +15,6 @@ jobs:
         strategy:
             matrix:
                 include:
-                    #-   os: ubuntu-18.04
-                    #    php-version: '7.2'
                     -   os: ubuntu-latest
                         php-version: '7.4'
                     -   os: ubuntu-latest

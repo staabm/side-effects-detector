@@ -1,0 +1,36 @@
+{
+    "name": "staabm/side-effects-detector",
+    "license": "MIT",
+    "keywords": ["static analysis"],
+    "autoload": {
+        "classmap": ["lib/"]
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
+    },
+    "require": {
+        "php": "^7.4 || ^8.0",
+        "ext-tokenizer": "*"
+    },
+    "require-dev": {
+        "phpstan/extension-installer": "^1.4.3",
+        "phpstan/phpstan": "^1.12.5",
+        "phpunit/phpunit": "^9.6.21",
+        "symfony/var-dumper": "^5.4.43",
+        "tomasvotruba/type-coverage": "0.2.5",
+        "tomasvotruba/unused-public": "0.3.11"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
+    },
+    "scripts": {
+        "phpstan": "phpstan analyze",
+        "test": "phpunit"
+    }
+}

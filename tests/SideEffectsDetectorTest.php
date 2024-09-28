@@ -34,6 +34,7 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php require_once "some-file.php";', true, true];
         yield ['<?php throw new RuntimeException("foo");', true, true];
         yield ['<?php unknownFunction($x);', null, null];
+        yield ['<?php echo unknownFunction($x);', true, null];
         yield ['<?php unset($x);', true, true];
         yield ['<?php (unset)$x;', true, true];
         yield ['<?php new SomeClass();', true, true];

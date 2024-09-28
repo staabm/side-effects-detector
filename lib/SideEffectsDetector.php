@@ -118,6 +118,9 @@ final class SideEffectsDetector {
         return null;
     }
 
+    /**
+     * @param array<int, array{0:int,1:string,2:int}|string|int> $tokens
+     */
     private function isAnonymousFunction(array $tokens, int $index): bool
     {
         if (

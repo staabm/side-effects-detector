@@ -41,5 +41,9 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php new SomeClass();', true, true];
         yield ['<?php function abc() {}', true, true];
         yield ['<?php class abc() {}', true, true];
+        yield ['<?php (function (){})();', false, false];
+        yield ['<?php (function(){})();', false, false];
+        yield ['<?php (function(){echo "hi";})();', true, false];
+        yield ['<?php (function (){echo "hi";})();', true, false];
     }
 }

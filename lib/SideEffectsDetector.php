@@ -63,6 +63,10 @@ final class SideEffectsDetector {
                 continue;
             }
 
+            if ($this->isAnonymousFunctionOrClass($tokens, $i)) {
+                continue;
+            }
+
             if (in_array($token[0], $this->sideEffectTokens, true)) {
                 return true;
             }
@@ -112,5 +116,32 @@ final class SideEffectsDetector {
         }
 
         return null;
+    }
+
+    private function isAnonymousFunctionOrClass(array $tokens, int $index): bool
+    {
+        if (
+            array_key_exists($index, $tokens)
+            && is_array($tokens[$index])
+            && ($tokens[$index][0] === T_FUNCTION || $tokens[$index][0] === T_CLASS)
+        ) {
+            $nextIndex = $index+1;
+            while (
+                array_key_exists($nextIndex, $tokens)
+                && is_array($tokens[$nextIndex])
+                && $tokens[$nextIndex][0] === T_WHITESPACE
+            ) {
+                $nextIndex++;
+            }
+
+            if (
+                array_key_exists($nextIndex, $tokens)
+                && $tokens[$nextIndex] === '('
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

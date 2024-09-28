@@ -55,6 +55,7 @@ final class SideEffectsDetector {
     public function hasSideEffects(string $code, bool $ignoreOutput = false): ?bool {
         $tokens = token_get_all($code);
 
+        $maybeSideEffects = false;
         foreach ($tokens as $i => $token) {
             if (!is_array($token)) {
                 continue;
@@ -73,11 +74,13 @@ final class SideEffectsDetector {
                     if ($this->functionMetadata[$functionCall]['hasSideEffects'] === true) {
                         return true;
                     }
+                } else {
+                    $maybeSideEffects = true;
                 }
             }
         }
 
-        return false;
+        return $maybeSideEffects ? null : false;
     }
 
     /**

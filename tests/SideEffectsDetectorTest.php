@@ -10,7 +10,7 @@ class SideEffectsDetectorTest extends TestCase {
     /**
      * @dataProvider dataHasSideEffects
      */
-    public function testHasSideEffects(string $code, bool $expected): void {
+    public function testHasSideEffects(string $code, ?bool $expected): void {
         $detector = new SideEffectsDetector();
         self::assertEquals($expected, $detector->hasSideEffects($code));
     }
@@ -31,6 +31,7 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php require "some-file.php";', true];
         yield ['<?php require_once "some-file.php";', true];
         yield ['<?php throw new RuntimeException("foo");', true];
+        yield ['<?php unknownFunction($x);', null];
         yield ['<?php unset($x);', true];
         yield ['<?php (unset)$x;', true];
         yield ['<?php new SomeClass();', true];
@@ -41,7 +42,7 @@ class SideEffectsDetectorTest extends TestCase {
     /**
      * @dataProvider dataHasSideEffectsIgnoreOutput
      */
-    public function testHasSideEffectsIgnoreOutput(string $code, bool $expected): void {
+    public function testHasSideEffectsIgnoreOutput(string $code, ?bool $expected): void {
         $detector = new SideEffectsDetector();
         self::assertEquals($expected, $detector->hasSideEffects($code, true));
     }
@@ -62,6 +63,7 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php require "some-file.php";', true];
         yield ['<?php require_once "some-file.php";', true];
         yield ['<?php throw new RuntimeException("foo");', true];
+        yield ['<?php unknownFunction($x);', null];
         yield ['<?php unset($x);', true];
         yield ['<?php (unset)$x;', true];
         yield ['<?php new SomeClass();', true];

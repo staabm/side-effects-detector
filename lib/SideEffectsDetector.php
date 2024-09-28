@@ -49,8 +49,10 @@ final class SideEffectsDetector {
 
     /**
      * @api
+     *
+     * @return bool|null true if side effects are detected, false if no side effects are detected, null if it cannot be determined.
      */
-    public function hasSideEffects(string $code): bool {
+    public function hasSideEffects(string $code, bool $ignoreOutput = false): ?bool {
         $tokens = token_get_all($code);
 
         foreach ($tokens as $i => $token) {
@@ -61,39 +63,8 @@ final class SideEffectsDetector {
             if (in_array($token[0], $this->sideEffectTokens, true)) {
                 return true;
             }
-            if (in_array($token[0], self::OUTPUT_TOKENS, true)) {
+            if (!$ignoreOutput && in_array($token[0], self::OUTPUT_TOKENS, true)) {
                 return true;
-            }
-
-            $functionCall = $this->getFunctionCall($tokens, $i);
-            if ($functionCall !== null) {
-                if (array_key_exists($functionCall, $this->functionMetadata)) {
-                    if ($this->functionMetadata[$functionCall]['hasSideEffects'] === true) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @api
-     */
-    public function hasSideEffectsIgnoreOutput(string $code): bool {
-        $tokens = token_get_all($code);
-
-        foreach ($tokens as $i => $token) {
-            if (!is_array($token)) {
-                continue;
-            }
-
-            if (in_array($token[0], $this->sideEffectTokens, true)) {
-                return true;
-            }
-            if (in_array($token[0], self::OUTPUT_TOKENS, true)) {
-                continue; // ignore output
             }
 
             $functionCall = $this->getFunctionCall($tokens, $i);

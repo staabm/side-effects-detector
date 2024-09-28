@@ -22,6 +22,6 @@ use staabm\SideEffectsDetector\SideEffectsDetector;
 $code = '<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");';
 
 $detector = new SideEffectsDetector();
-var_dump($detector->hasSideEffectsIgnoreOutput($code)); // false
+var_dump($detector->hasSideEffects($code, $ignoreOutput=true)); // false
 
 ```

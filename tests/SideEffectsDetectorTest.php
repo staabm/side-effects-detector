@@ -43,7 +43,7 @@ class SideEffectsDetectorTest extends TestCase {
      */
     public function testHasSideEffectsIgnoreOutput(string $code, bool $expected): void {
         $detector = new SideEffectsDetector();
-        self::assertEquals($expected, $detector->hasSideEffectsIgnoreOutput($code));
+        self::assertEquals($expected, $detector->hasSideEffects($code, true));
     }
 
     static public function dataHasSideEffectsIgnoreOutput():iterable

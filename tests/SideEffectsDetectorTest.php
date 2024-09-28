@@ -24,6 +24,7 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php fopen("file.txt");', true, true];
         yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', true, true];
         yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");', true, false];
+        yield ['<?php die(0);', true, true];
         yield ['<?php exit(0);', true, true];
         yield ['<?php eval($x);', true, true];
         yield ['<?php global $x; $x = false;', true, true];

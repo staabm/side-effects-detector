@@ -50,6 +50,8 @@ final class SideEffectsDetector {
     /**
      * @api
      *
+     * @param bool $ignoreOutput Whether to ignore output functions like echo, print, etc.
+     *
      * @return bool|null true if side effects are detected, false if no side effects are detected, null if it cannot be determined.
      */
     public function hasSideEffects(string $code, bool $ignoreOutput = false): ?bool {

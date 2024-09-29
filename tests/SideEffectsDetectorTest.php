@@ -19,6 +19,10 @@ class SideEffectsDetectorTest extends TestCase {
 
     static public function dataHasSideEffects():iterable
     {
+        yield ['<?php $_GET["A"] = 1;', true, true];
+        yield ['<?php $_POST["A"] = 1;', true, true];
+        yield ['<?php $_COOKIE["A"] = 1;', true, true];
+        yield ['<?php $_REQUEST["A"] = 1;', true, true];
         yield ['<?php $this->x = 1;', true, true];
         yield ['<?php $this->doFoo();', true, true];
         yield ['<?php $x = ini_set("memory_limit", "1024M");', true, true];

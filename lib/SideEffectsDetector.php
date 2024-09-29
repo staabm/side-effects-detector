@@ -165,7 +165,10 @@ final class SideEffectsDetector {
             if (
                 in_array(
                 $tokens[$index][1],
-                ['$this'],
+                [
+                    '$this',
+                    '$GLOBALS', '$_SERVER', '$_GET', '$_POST', '$_FILES', '$_COOKIE', '$_SESSION', '$_REQUEST', '$_ENV',
+                ],
             true)
             ) {
                 return true;

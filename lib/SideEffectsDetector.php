@@ -80,17 +80,40 @@ final class SideEffectsDetector {
 
             $functionCall = $this->getFunctionCall($tokens, $i);
             if ($functionCall !== null) {
-                if (array_key_exists($functionCall, $this->functionMetadata)) {
-                    if ($this->functionMetadata[$functionCall]['hasSideEffects'] === true) {
-                        return true;
-                    }
-                } else {
+                $callHasSideEffects = $this->functionCallHasSideEffects($functionCall);
+                if ($callHasSideEffects === true) {
+                    return true;
+                }
+                if ($callHasSideEffects === null) {
                     $maybeSideEffects = true;
                 }
             }
         }
 
         return $maybeSideEffects ? null : false;
+    }
+
+    private function functionCallHasSideEffects(string $functionName): ?bool {
+        if (array_key_exists($functionName, $this->functionMetadata)) {
+            if ($this->functionMetadata[$functionName]['hasSideEffects'] === true) {
+                return true;
+            }
+        } else {
+            try {
+                $reflectionFunction = new \ReflectionFunction($functionName);
+                $returnType = $reflectionFunction->getReturnType();
+                if ($returnType === null) {
+                    return null; // no reflection information -> we don't know
+                }
+                if ((string)$returnType === 'void') {
+                    return true; // functions with void return type must have side-effects
+                }
+            } catch (\ReflectionException $e) {
+                return null; // function does not exist -> we don't know
+            }
+        }
+
+        return null;
     }
 
     /**

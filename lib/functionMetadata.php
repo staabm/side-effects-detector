@@ -7,6 +7,10 @@
  */
 
 return [
+    // added data
+    'ini_set' => ['hasSideEffects' => true],
+
+    // PHPStan copied data
 	'BackedEnum::from' => ['hasSideEffects' => false],
 	'BackedEnum::tryFrom' => ['hasSideEffects' => false],
 	'CURLFile::getFilename' => ['hasSideEffects' => false],

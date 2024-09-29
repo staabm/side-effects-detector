@@ -19,6 +19,8 @@ class SideEffectsDetectorTest extends TestCase {
 
     static public function dataHasSideEffects():iterable
     {
+        yield ['<?php $x = ini_set("memory_limit", "1024M");', true, true];
+        yield ['<?php $x = ini_get("memory_limit");', false, false];
         yield ['<?php echo "Hello World";', true, false];
         yield ['<?php print("Hello World");', true, false];
         yield ['<?php fopen("file.txt");', true, true];

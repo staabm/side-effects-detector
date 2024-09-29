@@ -95,9 +95,7 @@ final class SideEffectsDetector {
 
     private function functionCallHasSideEffects(string $functionName): ?bool {
         if (array_key_exists($functionName, $this->functionMetadata)) {
-            if ($this->functionMetadata[$functionName]['hasSideEffects'] === true) {
-                return true;
-            }
+            return $this->functionMetadata[$functionName]['hasSideEffects'] === true;
         } else {
             try {
                 $reflectionFunction = new \ReflectionFunction($functionName);

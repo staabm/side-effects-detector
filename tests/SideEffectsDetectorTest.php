@@ -12,9 +12,9 @@ class SideEffectsDetectorTest extends TestCase {
      */
     public function testHasSideEffects(string $code, ?bool $expected, ?bool $expectedIgnoreOutput): void {
         $detector = new SideEffectsDetector();
-        self::assertEquals($expected, $detector->hasSideEffects($code));
+        self::assertSame($expected, $detector->hasSideEffects($code));
 
-        self::assertEquals($expectedIgnoreOutput, $detector->hasSideEffects($code, true));
+        self::assertSame($expectedIgnoreOutput, $detector->hasSideEffects($code, true));
     }
 
     static public function dataHasSideEffects():iterable

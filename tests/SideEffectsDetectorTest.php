@@ -19,8 +19,14 @@ class SideEffectsDetectorTest extends TestCase {
 
     static public function dataHasSideEffects():iterable
     {
-        yield ['<?php gc_enable();', true, true];
-        yield ['<?php gc_disable();', true, true];
+        if (PHP_VERSION_ID < 80000) {
+            // PHP7.x misses accurate reflection information
+            yield ['<?php gc_enable();', null, null];
+            yield ['<?php gc_disable();', null, null];
+        } else {
+            yield ['<?php gc_enable();', true, true];
+            yield ['<?php gc_disable();', true, true];
+        }
         yield ['<?php $_GET["A"] = 1;', true, true];
         yield ['<?php $_POST["A"] = 1;', true, true];
         yield ['<?php $_COOKIE["A"] = 1;', true, true];

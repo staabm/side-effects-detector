@@ -67,6 +67,10 @@ final class SideEffectsDetector {
                 continue;
             }
 
+            if ($this->isNonLocalVariable($tokens, $i)) {
+                return true;
+            }
+
             if (in_array($token[0], $this->sideEffectTokens, true)) {
                 return true;
             }
@@ -140,6 +144,29 @@ final class SideEffectsDetector {
             if (
                 array_key_exists($nextIndex, $tokens)
                 && $tokens[$nextIndex] === '('
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<int, array{0:int,1:string,2:int}|string|int> $tokens
+     */
+    private function isNonLocalVariable(array $tokens, int $index): bool
+    {
+        if (
+            array_key_exists($index, $tokens)
+            && is_array($tokens[$index])
+            && $tokens[$index][0] === T_VARIABLE
+        ) {
+            if (
+                in_array(
+                $tokens[$index][1],
+                ['$this'],
+            true)
             ) {
                 return true;
             }

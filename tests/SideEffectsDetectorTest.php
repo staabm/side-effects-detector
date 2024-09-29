@@ -25,7 +25,9 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php $_REQUEST["A"] = 1;', true, true];
         yield ['<?php $this->x = 1;', true, true];
         yield ['<?php $this->doFoo();', true, true];
-        yield ['<?php $x = ini_set("memory_limit", "1024M");', true, true];
+        yield ['<?php putenv("MY_X=1");', true, true];
+        yield ['<?php $x = getenv("MY_X");', false, false];
+        yield ['<?php ini_set("memory_limit", "1024M");', true, true];
         yield ['<?php $x = ini_get("memory_limit");', false, false];
         yield ['<?php echo "Hello World";', true, false];
         yield ['<?php print("Hello World");', true, false];

@@ -9,6 +9,7 @@
 return [
     // added data
     'ini_set' => ['hasSideEffects' => true],
+    'putenv' => ['hasSideEffects' => true],
 
     // PHPStan copied data
 	'BackedEnum::from' => ['hasSideEffects' => false],

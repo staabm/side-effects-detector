@@ -24,9 +24,9 @@ class SideEffectsDetectorTest extends TestCase {
 
         if (PHP_VERSION_ID < 80000) {
             // PHP7.x misses accurate reflection information
-            yield ['<?php gc_enable();', [], []];
+            yield ['<?php gc_enable();', [SideEffect::MAYBE], [SideEffect::MAYBE]];
             yield ['<?php gc_enabled();', [], []];
-            yield ['<?php gc_disable();', [], []];
+            yield ['<?php gc_disable();', [SideEffect::MAYBE], [SideEffect::MAYBE]];
         } else {
             yield ['<?php gc_enable();', [SideEffect::UNKNOWN_CLASS], [SideEffect::UNKNOWN_CLASS]];
             yield ['<?php gc_enabled();', [], []];

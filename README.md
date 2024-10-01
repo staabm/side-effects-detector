@@ -17,7 +17,8 @@ use staabm\SideEffectsDetector\SideEffectsDetector;
 $code = '<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");';
 
 $detector = new SideEffectsDetector();
-var_dump($detector->getSideEffects($code)); // [SideEffect::STANDARD_OUTPUT]
+// [SideEffect::STANDARD_OUTPUT]
+var_dump($detector->getSideEffects($code));
 ```
 
 In case functions are called which are not known to have side-effects - e.g. userland functions - `null` is returned.
@@ -28,7 +29,8 @@ use staabm\SideEffectsDetector\SideEffectsDetector;
 $code = '<?php userlandFunction();';
 
 $detector = new SideEffectsDetector();
-var_dump($detector->getSideEffects($code)); // [SideEffect::MAYBE]
+// [SideEffect::MAYBE]
+var_dump($detector->getSideEffects($code));
 ```
 
 Code might have multiple side-effects:
@@ -39,7 +41,8 @@ use staabm\SideEffectsDetector\SideEffectsDetector;
 $code = '<?php include "some-file.php"; echo "hello world"; exit(1);';
 
 $detector = new SideEffectsDetector();
-var_dump($detector->getSideEffects($code)); // [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT, SideEffect::PROCESS_EXIT]
+// [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT, SideEffect::PROCESS_EXIT]
+var_dump($detector->getSideEffects($code));
 ```
 
 

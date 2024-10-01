@@ -7,7 +7,7 @@ namespace staabm\SideEffectsDetector;
  */
 final class SideEffect {
     /**
-     * die, exit, throw
+     * die, exit, throw.
      */
     const PROCESS_EXIT = 'process_exit';
 
@@ -17,12 +17,12 @@ final class SideEffect {
     const SCOPE_POLLUTION = 'scope_pollution';
 
     /**
-     * fwrite, unlink.
+     * fwrite, unlink...
      */
     const INPUT_OUTPUT = 'input_output';
 
     /**
-     * echo, print
+     * echo, print.
      */
     const STANDARD_OUTPUT = 'standard_output';
 

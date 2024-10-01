@@ -40,16 +40,9 @@ final class SideEffectsDetector {
 
     private const INPUT_OUTPUT_FUNCTIONS = [
         'fopen',
-        'file_get_contents',
         'file_put_contents',
-        'fread',
         'fwrite',
-        'fgets',
         'fputs',
-        'fscanf',
-        'fgetcsv',
-        'fgetss',
-        'fgetscsv',
         'unlink'
     ];
 

@@ -73,7 +73,6 @@ final class SideEffectsDetector {
         $tokens = token_get_all($code);
 
         $sideEffects = [];
-        $maybeSideEffects = false;
         for ($i = 0; $i < count($tokens); $i++) {
             $token = $tokens[$i];
 

@@ -155,7 +155,7 @@ final class SideEffectsDetector {
     /**
      * @return SideEffect::*|null
      */
-    private function getFunctionCallSideEffect(string $functionName): ?string { // @phpstan-ignore return.unusedType, return.unusedType, return.unusedType
+    private function getFunctionCallSideEffect(string $functionName): ?string { // @phpstan-ignore return.unusedType, return.unusedType
         if (in_array($functionName, self::INPUT_OUTPUT_FUNCTIONS, true)) {
             return SideEffect::INPUT_OUTPUT;
         }
@@ -230,6 +230,7 @@ final class SideEffectsDetector {
 
         if (
             !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
             || !in_array($tokens[$index][0], [T_OBJECT_OPERATOR , T_DOUBLE_COLON ], true)
         ) {
             return null;

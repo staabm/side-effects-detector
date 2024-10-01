@@ -67,11 +67,9 @@ final class SideEffectsDetector {
     /**
      * @api
      *
-     * @param bool $ignoreOutput Whether to ignore output functions like echo, print, etc.
-     *
      * @return array<SideEffect::*>
      */
-    public function getSideEffects(string $code, bool $ignoreOutput = false): array {
+    public function getSideEffects(string $code): array {
         $tokens = token_get_all($code);
 
         $sideEffects = [];
@@ -87,7 +85,7 @@ final class SideEffectsDetector {
                 continue;
             }
 
-            if (!$ignoreOutput && in_array($token[0], self::OUTPUT_TOKENS, true)) {
+            if (in_array($token[0], self::OUTPUT_TOKENS, true)) {
                 $sideEffects[] = SideEffect::STANDARD_OUTPUT;
                 continue;
             }

@@ -3,6 +3,7 @@
 namespace staabm\SideEffectsDetector\Tests;
 
 use PHPUnit\Framework\TestCase;
+use staabm\SideEffectsDetector\SideEffect;
 use staabm\SideEffectsDetector\SideEffectsDetector;
 
 class SideEffectsDetectorTest extends TestCase {
@@ -10,58 +11,66 @@ class SideEffectsDetectorTest extends TestCase {
     /**
      * @dataProvider dataHasSideEffects
      */
-    public function testHasSideEffects(string $code, ?bool $expected, ?bool $expectedIgnoreOutput): void {
+    public function testHasSideEffects(string $code, array $expected, array $expectedIgnoreOutput): void {
         $detector = new SideEffectsDetector();
-        self::assertSame($expected, $detector->hasSideEffects($code));
+        self::assertSame($expected, $detector->getSideEffects($code));
 
-        self::assertSame($expectedIgnoreOutput, $detector->hasSideEffects($code, true));
+        self::assertSame($expectedIgnoreOutput, $detector->getSideEffects($code, true));
     }
 
     static public function dataHasSideEffects():iterable
     {
+        yield ['<?php function abc() {}', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+
         if (PHP_VERSION_ID < 80000) {
             // PHP7.x misses accurate reflection information
-            yield ['<?php gc_enable();', null, null];
-            yield ['<?php gc_disable();', null, null];
+            yield ['<?php gc_enable();', [], []];
+            yield ['<?php gc_enabled();', [], []];
+            yield ['<?php gc_disable();', [], []];
         } else {
-            yield ['<?php gc_enable();', true, true];
-            yield ['<?php gc_disable();', true, true];
+            yield ['<?php gc_enable();', [SideEffect::UNKNOWN_CLASS], [SideEffect::UNKNOWN_CLASS]];
+            yield ['<?php gc_enabled();', [], []];
+            yield ['<?php gc_disable();', [SideEffect::UNKNOWN_CLASS], [SideEffect::UNKNOWN_CLASS]];
         }
-        yield ['<?php $_GET["A"] = 1;', true, true];
-        yield ['<?php $_POST["A"] = 1;', true, true];
-        yield ['<?php $_COOKIE["A"] = 1;', true, true];
-        yield ['<?php $_REQUEST["A"] = 1;', true, true];
-        yield ['<?php $this->x = 1;', true, true];
-        yield ['<?php $this->doFoo();', true, true];
-        yield ['<?php putenv("MY_X=1");', true, true];
-        yield ['<?php $x = getenv("MY_X");', false, false];
-        yield ['<?php ini_set("memory_limit", "1024M");', true, true];
-        yield ['<?php $x = ini_get("memory_limit");', false, false];
-        yield ['<?php echo "Hello World";', true, false];
-        yield ['<?php print("Hello World");', true, false];
-        yield ['<?php fopen("file.txt");', true, true];
-        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', true, true];
-        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");', true, false];
-        yield ['<?php die(0);', true, true];
-        yield ['<?php exit(0);', true, true];
-        yield ['<?php eval($x);', true, true];
-        yield ['<?php global $x; $x = false;', true, true];
-        yield ['<?php goto somewhere;', true, true];
-        yield ['<?php include "some-file.php";', true, true];
-        yield ['<?php include_once "some-file.php";', true, true];
-        yield ['<?php require "some-file.php";', true, true];
-        yield ['<?php require_once "some-file.php";', true, true];
-        yield ['<?php throw new RuntimeException("foo");', true, true];
-        yield ['<?php unknownFunction($x);', null, null];
-        yield ['<?php echo unknownFunction($x);', true, null];
-        yield ['<?php unset($x);', true, true];
-        yield ['<?php (unset)$x;', true, true];
-        yield ['<?php new SomeClass();', true, true];
-        yield ['<?php function abc() {}', true, true];
-        yield ['<?php class abc() {}', true, true];
-        yield ['<?php (function (){})();', false, false];
-        yield ['<?php (function(){})();', false, false];
-        yield ['<?php (function(){echo "hi";})();', true, false];
-        yield ['<?php (function (){echo "hi";})();', true, false];
+        yield ['<?php $_GET["A"] = 1;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $_POST["A"] = 1;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $_COOKIE["A"] = 1;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $_REQUEST["A"] = 1;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $this->x = 1;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php MyClass::$x = 1;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $this->doFoo();', [SideEffect::MAYBE], [SideEffect::MAYBE]];
+        yield ['<?php MyClass::doFooBar();', [SideEffect::MAYBE], [SideEffect::MAYBE]];
+        yield ['<?php putenv("MY_X=1");', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $x = getenv("MY_X");', [], []];
+        yield ['<?php ini_set("memory_limit", "1024M");', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php $x = ini_get("memory_limit");', [], []];
+        yield ['<?php echo "Hello World";', [SideEffect::STANDARD_OUTPUT], []];
+        yield ['<?php print("Hello World");', [SideEffect::STANDARD_OUTPUT], []];
+        yield ['<?php fopen("file.txt");', [SideEffect::INPUT_OUTPUT], [SideEffect::INPUT_OUTPUT]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', [SideEffect::PROCESS_EXIT], [SideEffect::PROCESS_EXIT]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");', [SideEffect::STANDARD_OUTPUT], []];
+        yield ['<?php die(0);', [SideEffect::PROCESS_EXIT], [SideEffect::PROCESS_EXIT]];
+        yield ['<?php exit(0);', [SideEffect::PROCESS_EXIT], [SideEffect::PROCESS_EXIT]];
+        yield ['<?php eval($x);', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php global $x; $x = [];', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php goto somewhere;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php include "some-file.php";', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php include_once "some-file.php";', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php require "some-file.php";', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php require_once "some-file.php";', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        // constructor might have side-effects
+        yield ['<?php throw new RuntimeException("foo");', [SideEffect::SCOPE_POLLUTION, SideEffect::MAYBE], [SideEffect::SCOPE_POLLUTION, SideEffect::MAYBE]];
+        yield ['<?php unknownFunction($x);', [SideEffect::MAYBE], [SideEffect::MAYBE]];
+        yield ['<?php echo unknownFunction($x);', [SideEffect::STANDARD_OUTPUT, SideEffect::MAYBE], [SideEffect::MAYBE]];
+        yield ['<?php unset($x);', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php (unset)$x;', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        // constructor might have side-effects
+        yield ['<?php new SomeClass();', [SideEffect::SCOPE_POLLUTION, SideEffect::MAYBE], [SideEffect::SCOPE_POLLUTION, SideEffect::MAYBE]];
+        yield ['<?php function abc() {}', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php class abc {}', [SideEffect::SCOPE_POLLUTION], [SideEffect::SCOPE_POLLUTION]];
+        yield ['<?php (function (){})();', [], []];
+        yield ['<?php (function(){})();', [], []];
+        yield ['<?php (function(){echo "hi";})();', [SideEffect::STANDARD_OUTPUT], []];
+        yield ['<?php (function (){echo "hi";})();', [SideEffect::STANDARD_OUTPUT], []];
     }
 }

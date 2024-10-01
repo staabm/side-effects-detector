@@ -6,12 +6,11 @@ final class SideEffectsDetector {
     /**
      * @var array<int>
      */
-    private array $sideEffectTokens = [
+    private array $scopePollutingTokens = [
         T_CLASS,
         T_FUNCTION,
         T_NEW,
         T_EVAL,
-        T_EXIT,
         T_GLOBAL,
         T_GOTO,
         T_HALT_COMPILER,
@@ -24,10 +23,34 @@ final class SideEffectsDetector {
         T_UNSET_CAST
     ];
 
+    private const PROCESS_EXIT_TOKENS = [
+        T_EXIT
+    ];
+
     private const OUTPUT_TOKENS = [
         T_PRINT,
         T_ECHO,
         T_INLINE_HTML
+    ];
+
+    private const SCOPE_POLLUTING_FUNCTIONS = [
+        'putenv',
+        'ini_set',
+    ];
+
+    private const INPUT_OUTPUT_FUNCTIONS = [
+        'fopen',
+        'file_get_contents',
+        'file_put_contents',
+        'fread',
+        'fwrite',
+        'fgets',
+        'fputs',
+        'fscanf',
+        'fgetcsv',
+        'fgetss',
+        'fgetscsv',
+        'unlink'
     ];
 
     /**
@@ -43,7 +66,7 @@ final class SideEffectsDetector {
         $this->functionMetadata = $functionMeta;
 
         if (defined('T_ENUM')) {
-            $this->sideEffectTokens[] = T_ENUM;
+            $this->scopePollutingTokens[] = T_ENUM;
         }
     }
 
@@ -52,13 +75,16 @@ final class SideEffectsDetector {
      *
      * @param bool $ignoreOutput Whether to ignore output functions like echo, print, etc.
      *
-     * @return bool|null true if side effects are detected, false if no side effects are detected, null if it cannot be determined.
+     * @return array<SideEffect::*>
      */
-    public function hasSideEffects(string $code, bool $ignoreOutput = false): ?bool {
+    public function getSideEffects(string $code, bool $ignoreOutput = false): array {
         $tokens = token_get_all($code);
 
+        $sideEffects = [];
         $maybeSideEffects = false;
-        foreach ($tokens as $i => $token) {
+        for ($i = 0; $i < count($tokens); $i++) {
+            $token = $tokens[$i];
+
             if (!is_array($token)) {
                 continue;
             }
@@ -67,47 +93,93 @@ final class SideEffectsDetector {
                 continue;
             }
 
-            if ($this->isNonLocalVariable($tokens, $i)) {
-                return true;
-            }
-
-            if (in_array($token[0], $this->sideEffectTokens, true)) {
-                return true;
-            }
             if (!$ignoreOutput && in_array($token[0], self::OUTPUT_TOKENS, true)) {
-                return true;
+                $sideEffects[] = SideEffect::STANDARD_OUTPUT;
+                continue;
+            }
+            if (in_array($token[0], self::PROCESS_EXIT_TOKENS, true)) {
+                $sideEffects[] = SideEffect::PROCESS_EXIT;
+                continue;
+            }
+            if (in_array($token[0], $this->scopePollutingTokens, true)) {
+                $sideEffects[] = SideEffect::SCOPE_POLLUTION;
+
+                $i++;
+                if (in_array($token[0], [T_FUNCTION, T_CLASS], true)) {
+                    $this->consumeWhitespaces($tokens, $i);
+                }
+
+                // consume function/class-name
+                if (
+                    !array_key_exists($i, $tokens)
+                    || !is_array($tokens[$i])
+                    || $tokens[$i][0] !== T_STRING
+                ) {
+                    continue;
+                }
+
+                $i++;
+                continue;
             }
 
             $functionCall = $this->getFunctionCall($tokens, $i);
             if ($functionCall !== null) {
-                $callHasSideEffects = $this->functionCallHasSideEffects($functionCall);
-                if ($callHasSideEffects === true) {
-                    return true;
+                $callSideEffect = $this->getFunctionCallSideEffect($functionCall);
+                if ($callSideEffect !== null) {
+                    $sideEffects[] = $callSideEffect;
                 }
-                if ($callHasSideEffects === null) {
-                    $maybeSideEffects = true;
-                }
+                continue;
+            }
+
+            $methodCall = $this->getMethodCall($tokens, $i);
+            if ($methodCall !== null) {
+                $sideEffects[] = SideEffect::MAYBE;
+                continue;
+            }
+
+            $propertyAccess = $this->getPropertyAccess($tokens, $i);
+            if ($propertyAccess !== null) {
+                $sideEffects[] = SideEffect::SCOPE_POLLUTION;
+                continue;
+            }
+
+            if ($this->isNonLocalVariable($tokens, $i)) {
+                $sideEffects[] = SideEffect::SCOPE_POLLUTION;
+                continue;
             }
         }
 
-        return $maybeSideEffects ? null : false;
+        return array_values(array_unique($sideEffects));
     }
 
-    private function functionCallHasSideEffects(string $functionName): ?bool {
+    /**
+     * @return SideEffect::*|null
+     */
+    private function getFunctionCallSideEffect(string $functionName): ?string { // @phpstan-ignore return.unusedType, return.unusedType, return.unusedType
+        if (in_array($functionName, self::INPUT_OUTPUT_FUNCTIONS, true)) {
+            return SideEffect::INPUT_OUTPUT;
+        }
+
+        if (in_array($functionName, self::SCOPE_POLLUTING_FUNCTIONS, true)) {
+            return SideEffect::SCOPE_POLLUTION;
+        }
+
         if (array_key_exists($functionName, $this->functionMetadata)) {
-            return $this->functionMetadata[$functionName]['hasSideEffects'] === true;
+            if ($this->functionMetadata[$functionName]['hasSideEffects'] === true) {
+                return SideEffect::UNKNOWN_CLASS;
+            }
         } else {
             try {
                 $reflectionFunction = new \ReflectionFunction($functionName);
                 $returnType = $reflectionFunction->getReturnType();
                 if ($returnType === null) {
-                    return null; // no reflection information -> we don't know
+                    return SideEffect::MAYBE; // no reflection information -> we don't know
                 }
                 if ((string)$returnType === 'void') {
-                    return true; // functions with void return type must have side-effects
+                    return SideEffect::UNKNOWN_CLASS; // functions with void return type must have side-effects
                 }
             } catch (\ReflectionException $e) {
-                return null; // function does not exist -> we don't know
+                return SideEffect::MAYBE; // function does not exist -> we don't know
             }
         }
 
@@ -119,25 +191,22 @@ final class SideEffectsDetector {
      */
     private function getFunctionCall(array $tokens, int $index): ?string {
         if (
-            array_key_exists($index, $tokens)
-            && is_array($tokens[$index])
-            && $tokens[$index][0] === T_STRING
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || $tokens[$index][0] !== T_STRING
         ) {
-            $nextIndex = $index+1;
-            while (
-                array_key_exists($nextIndex, $tokens)
-                && is_int($tokens[$nextIndex])
-                && $tokens[$nextIndex] === T_WHITESPACE
-            ) {
-                $nextIndex++;
-            }
+            return null;
+        }
+        $functionName = $tokens[$index][1];
 
-            if (
-                array_key_exists($nextIndex, $tokens)
-                && $tokens[$nextIndex] === '('
-            ) {
-                return $tokens[$index][1];
-            }
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            array_key_exists($index, $tokens)
+            && $tokens[$index] === '('
+        ) {
+            return $functionName;
         }
 
         return null;
@@ -146,28 +215,113 @@ final class SideEffectsDetector {
     /**
      * @param array<int, array{0:int,1:string,2:int}|string|int> $tokens
      */
+    private function getMethodCall(array $tokens, int $index): ?string {
+        if (
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || !in_array($tokens[$index][0], [T_VARIABLE, T_STRING], true)
+        ) {
+            return null;
+        }
+        $callee = $tokens[$index][1];
+
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            !array_key_exists($index, $tokens)
+            || !in_array($tokens[$index][0], [T_OBJECT_OPERATOR , T_DOUBLE_COLON ], true)
+        ) {
+            return null;
+        }
+        $operator = $tokens[$index][1];
+
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || !in_array($tokens[$index][0], [T_STRING], true)
+        ) {
+            return null;
+        }
+        $method = $tokens[$index][1];
+
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            array_key_exists($index, $tokens)
+            && $tokens[$index] !== '('
+        ) {
+            return null;
+        }
+
+        return $callee . $operator . $method;
+    }
+
+    /**
+     * @param array<int, array{0:int,1:string,2:int}|string|int> $tokens
+     */
+    private function getPropertyAccess(array $tokens, int $index): ?string {
+        if (
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || !in_array($tokens[$index][0], [T_VARIABLE, T_STRING], true)
+        ) {
+            return null;
+        }
+        $objectOrClass = $tokens[$index][1];
+
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || !in_array($tokens[$index][0], [T_OBJECT_OPERATOR , T_DOUBLE_COLON ], true)
+        ) {
+            return null;
+        }
+        $operator = $tokens[$index][1];
+
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || !in_array($tokens[$index][0], [T_STRING, T_VARIABLE], true)
+        ) {
+            return null;
+        }
+        $propName = $tokens[$index][1];
+
+        return $objectOrClass . $operator . $propName;
+    }
+
+    /**
+     * @param array<int, array{0:int,1:string,2:int}|string|int> $tokens
+     */
     private function isAnonymousFunction(array $tokens, int $index): bool
     {
         if (
-            array_key_exists($index, $tokens)
-            && is_array($tokens[$index])
-            && $tokens[$index][0] === T_FUNCTION
+            !array_key_exists($index, $tokens)
+            || !is_array($tokens[$index])
+            || $tokens[$index][0] !== T_FUNCTION
         ) {
-            $nextIndex = $index+1;
-            while (
-                array_key_exists($nextIndex, $tokens)
-                && is_array($tokens[$nextIndex])
-                && $tokens[$nextIndex][0] === T_WHITESPACE
-            ) {
-                $nextIndex++;
-            }
+            return false;
+        }
 
-            if (
-                array_key_exists($nextIndex, $tokens)
-                && $tokens[$nextIndex] === '('
-            ) {
-                return true;
-            }
+        $index++;
+        $this->consumeWhitespaces($tokens, $index);
+
+        if (
+            array_key_exists($index, $tokens)
+            && $tokens[$index] === '('
+        ) {
+            return true;
         }
 
         return false;
@@ -197,5 +351,18 @@ final class SideEffectsDetector {
         }
 
         return false;
+    }
+
+    /**
+     * @param array<int, array{0:int,1:string,2:int}|string|int> $tokens
+     */
+    private function consumeWhitespaces(array $tokens, int &$index): void {
+        while (
+            array_key_exists($index, $tokens)
+            && is_array($tokens[$index])
+            && $tokens[$index][0] === T_WHITESPACE
+        ) {
+            $index++;
+        }
     }
 }

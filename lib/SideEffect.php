@@ -12,7 +12,7 @@ final class SideEffect {
     const PROCESS_EXIT = 'process_exit';
 
     /**
-     * class, func definition, include, require, global var, unset, goto
+     * class definition, func definition, include, require, global var, unset, goto
      */
     const SCOPE_POLLUTION = 'scope_pollution';
 

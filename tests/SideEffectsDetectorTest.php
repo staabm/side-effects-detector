@@ -72,5 +72,10 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php (function(){})();', [], []];
         yield ['<?php (function(){echo "hi";})();', [SideEffect::STANDARD_OUTPUT], []];
         yield ['<?php (function (){echo "hi";})();', [SideEffect::STANDARD_OUTPUT], []];
+
+        yield ['<?php include "some-file.php"; echo "hello world"; exit(1);',
+            [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT, SideEffect::PROCESS_EXIT],
+            [SideEffect::SCOPE_POLLUTION, SideEffect::PROCESS_EXIT],
+        ];
     }
 }

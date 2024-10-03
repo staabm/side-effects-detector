@@ -48,8 +48,6 @@ var_dump($detector->getSideEffects($code));
 
 ## Disclaimer
 
-This library is best used in cases where you want to analyze a given code snippet does not or for sure contains side-effects.
-
 Non goals are:
 - find the best possible answer for all cases
 - add runtime dependencies

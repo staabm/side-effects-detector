@@ -19,7 +19,7 @@
         "phpstan/phpstan": "^1.12.5",
         "phpunit/phpunit": "^9.6.21",
         "symfony/var-dumper": "^5.4.43",
-        "tomasvotruba/type-coverage": "0.2.5",
+        "tomasvotruba/type-coverage": "1.0.0",
         "tomasvotruba/unused-public": "1.0.0"
     },
     "config": {

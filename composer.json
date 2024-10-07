@@ -20,7 +20,7 @@
         "phpunit/phpunit": "^9.6.21",
         "symfony/var-dumper": "^5.4.43",
         "tomasvotruba/type-coverage": "0.2.5",
-        "tomasvotruba/unused-public": "0.3.11"
+        "tomasvotruba/unused-public": "1.0.0"
     },
     "config": {
         "optimize-autoloader": true,

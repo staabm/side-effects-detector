@@ -35,6 +35,8 @@ final class SideEffectsDetector {
 
     private const SCOPE_POLLUTING_FUNCTIONS = [
         'putenv',
+        'setlocale',
+        'class_exists',
         'ini_set',
     ];
 
@@ -44,6 +46,7 @@ final class SideEffectsDetector {
         'file_put_contents',
         'fwrite',
         'fputs',
+        'fread',
         'unlink'
     ];
 

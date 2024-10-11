@@ -70,6 +70,16 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php (function(){})();', []];
         yield ['<?php (function(){echo "hi";})();', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php (function (){echo "hi";})();', [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php if (getenv("SKIP_SLOW_TESTS")) echo("skip slow test");', [SideEffect::STANDARD_OUTPUT]];
+        yield ["<?php if (file_exists(__DIR__. '/sess_' .session_id())) unlink(__DIR__. '/sess_' .session_id());", [SideEffect::INPUT_OUTPUT]];
+        yield ["<?php if (setlocale(LC_ALL, 'invalid') === 'invalid') { echo 'skip setlocale() is broken /w musl'; }", [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT]];
+        yield ["<?php if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { echo 'skip this test on windows'; }", [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php if (PHP_INT_SIZE != 8) echo "skip this test is for 64bit platform only";', [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php if (PHP_OS_FAMILY !== "Windows") echo "skip for Windows only";', [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php if (PHP_ZTS) echo "skip hard_timeout works only on no-zts builds";', [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php if (getenv("SKIP_SLOW_TESTS")) echo "skip slow test"; if (PHP_OS_FAMILY !== "Windows") echo "skip Windows only test";', [SideEffect::STANDARD_OUTPUT]];
+        yield ["<?php if (class_exists('autoload_root', false)) echo 'skip Autoload test classes exist already';", [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT]];
+        yield ["<?php if (strtolower(php_uname('s')) == 'darwin') { print 'skip ok to fail on MacOS X';}", [SideEffect::STANDARD_OUTPUT]];
 
         yield ['<?php include "some-file.php"; echo "hello world"; exit(1);',
             [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT, SideEffect::PROCESS_EXIT],

@@ -25,10 +25,12 @@ class SideEffectsDetectorTest extends TestCase {
             yield ['<?php gc_enable();', [SideEffect::MAYBE]];
             yield ['<?php gc_enabled();', []];
             yield ['<?php gc_disable();', [SideEffect::MAYBE]];
+            yield ["<?php if (file_exists(__DIR__. '/sess_' .session_id())) unlink(__DIR__. '/sess_' .session_id());", [SideEffect::MAYBE, SideEffect::INPUT_OUTPUT]];
         } else {
             yield ['<?php gc_enable();', [SideEffect::UNKNOWN_CLASS]];
             yield ['<?php gc_enabled();', []];
             yield ['<?php gc_disable();', [SideEffect::UNKNOWN_CLASS]];
+            yield ["<?php if (file_exists(__DIR__. '/sess_' .session_id())) unlink(__DIR__. '/sess_' .session_id());", [SideEffect::INPUT_OUTPUT]];
         }
         yield ['<?php $_GET["A"] = 1;', [SideEffect::SCOPE_POLLUTION]];
         yield ['<?php $_POST["A"] = 1;', [SideEffect::SCOPE_POLLUTION]];
@@ -71,7 +73,6 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php (function(){echo "hi";})();', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php (function (){echo "hi";})();', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php if (getenv("SKIP_SLOW_TESTS")) echo("skip slow test");', [SideEffect::STANDARD_OUTPUT]];
-        yield ["<?php if (file_exists(__DIR__. '/sess_' .session_id())) unlink(__DIR__. '/sess_' .session_id());", [SideEffect::INPUT_OUTPUT]];
         yield ["<?php if (setlocale(LC_ALL, 'invalid') === 'invalid') { echo 'skip setlocale() is broken /w musl'; }", [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT]];
         yield ["<?php if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') { echo 'skip this test on windows'; }", [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php if (PHP_INT_SIZE != 8) echo "skip this test is for 64bit platform only";', [SideEffect::STANDARD_OUTPUT]];

@@ -1,7 +1,7 @@
 <?php declare(strict_types = 1);
 
 /**
- * Copied from PHPStan
+ * Intially copied from PHPStan, but modified with some additional info about often used functions/methods, which PHPStan gets information about from other sources.
  *
  * https://github.com/phpstan/phpstan-src/blob/2.0.x/resources/functionMap.php
  */
@@ -12,7 +12,7 @@ return [
     'putenv' => ['hasSideEffects' => true],
     'version_compare' => ['hasSideEffects' => false],
 
-    // PHPStan copied data
+    // Intially copied from PHPStan
 	'BackedEnum::from' => ['hasSideEffects' => false],
 	'BackedEnum::tryFrom' => ['hasSideEffects' => false],
 	'CURLFile::getFilename' => ['hasSideEffects' => false],

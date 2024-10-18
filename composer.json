@@ -1,6 +1,7 @@
 {
     "name": "staabm/side-effects-detector",
     "license": "MIT",
+    "description": "A static analysis tool to detect side effects in PHP code",
     "keywords": ["static analysis"],
     "autoload": {
         "classmap": ["lib/"]

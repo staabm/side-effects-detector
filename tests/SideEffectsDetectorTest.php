@@ -81,6 +81,8 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php if (getenv("SKIP_SLOW_TESTS")) echo "skip slow test"; if (PHP_OS_FAMILY !== "Windows") echo "skip Windows only test";', [SideEffect::STANDARD_OUTPUT]];
         yield ["<?php if (class_exists('autoload_root', false)) echo 'skip Autoload test classes exist already';", [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT]];
         yield ["<?php if (strtolower(php_uname('s')) == 'darwin') { print 'skip ok to fail on MacOS X';}", [SideEffect::STANDARD_OUTPUT]];
+        yield ["<?php if declare(strict_types=1); if (1 == 2) { exit(1); }", [SideEffect::PROCESS_EXIT]];
+
 
         yield ['<?php include "some-file.php"; echo "hello world"; exit(1);',
             [SideEffect::SCOPE_POLLUTION, SideEffect::STANDARD_OUTPUT, SideEffect::PROCESS_EXIT],

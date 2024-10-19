@@ -42,6 +42,7 @@ final class SideEffectsDetector {
 
     private const STANDARD_OUTPUT_FUNCTIONS = [
         'printf',
+        'vprintf'
     ];
 
     private const INPUT_OUTPUT_FUNCTIONS = [

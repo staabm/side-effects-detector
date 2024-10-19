@@ -47,6 +47,7 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php echo "Hello World";', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php print("Hello World");', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php printf("Hello %s", "World");', [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php vprintf("Hello %s", ["World"]);', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php fopen("file.txt");', [SideEffect::INPUT_OUTPUT]];
         yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', [SideEffect::PROCESS_EXIT]];
         yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");', [SideEffect::STANDARD_OUTPUT]];

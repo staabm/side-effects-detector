@@ -9,6 +9,7 @@
 return [
     // added data
     'ini_set' => ['hasSideEffects' => true],
+    'trigger_error' => ['hasSideEffects' => true],
     'putenv' => ['hasSideEffects' => true],
     'version_compare' => ['hasSideEffects' => false],
 

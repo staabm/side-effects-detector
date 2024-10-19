@@ -40,6 +40,10 @@ final class SideEffectsDetector {
         'ini_set',
     ];
 
+    private const STANDARD_OUTPUT_FUNCTIONS = [
+        'printf',
+    ];
+
     private const INPUT_OUTPUT_FUNCTIONS = [
         'fopen',
         'file_get_contents',
@@ -149,7 +153,11 @@ final class SideEffectsDetector {
     /**
      * @return SideEffect::*|null
      */
-    private function getFunctionCallSideEffect(string $functionName): ?string { // @phpstan-ignore return.unusedType, return.unusedType
+    private function getFunctionCallSideEffect(string $functionName): ?string { // @phpstan-ignore return.unusedType
+        if (in_array($functionName, self::STANDARD_OUTPUT_FUNCTIONS, true)) {
+            return SideEffect::STANDARD_OUTPUT;
+        }
+
         if (in_array($functionName, self::INPUT_OUTPUT_FUNCTIONS, true)) {
             return SideEffect::INPUT_OUTPUT;
         }

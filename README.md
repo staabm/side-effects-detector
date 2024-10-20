@@ -104,6 +104,7 @@ function runCode(string $code) {
 Non goals are:
 - find the best possible answer for all cases
 - add runtime dependencies
+- inspect additional metadata like attributes or phpdoc tags
 
 If you are in need of a fully fledged side-effect analysis, use more advanced tools like PHPStan.
 

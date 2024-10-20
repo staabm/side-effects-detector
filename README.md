@@ -45,6 +45,59 @@ $detector = new SideEffectsDetector();
 var_dump($detector->getSideEffects($code));
 ```
 
+## Compensate some side-effects
+
+It might be useful to compensate some side-effects, so evaluation of code in the current process is still acceptable:
+
+```php
+use staabm\SideEffectsDetector\SideEffectsDetector;
+
+function runCodeInLocalSandbox(string $code): string
+{
+    $code = preg_replace('/^<\?(php)?/', '', $code);
+    $code = preg_replace('/declare\S?\([^)]+\)\S?;/', '', $code);
+
+    // wrap in immediately invoked function to isolate local-side-effects of $code from our own process
+    $code = '(function() {' . $code . '})();';
+    
+    // wrap in output buffer to isolate stdout side-effects
+    ob_start();
+    @eval($code);
+
+    return ob_get_clean();
+}
+
+function shouldRunInSubprocess(string $code): bool
+{
+    $detector    = new SideEffectsDetector;
+    $sideEffects = $detector->getSideEffects($cleanCode);
+
+    if ($sideEffects === []) {
+        return false; // no side-effects
+    }
+
+    foreach ($sideEffects as $sideEffect) {
+        // stdout is fine, we will catch it using output-buffering
+        if ($sideEffect === SideEffect::STANDARD_OUTPUT) {
+            continue;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+function runCode(string $code) {
+    if (!shouldRunInSubprocess($code)) {
+        return runCodeInLocalSandbox($code);
+    }
+    
+    // run $code in isolation, e.g. in a subprocess
+    // ...
+}
+```
+
 
 ## Disclaimer
 

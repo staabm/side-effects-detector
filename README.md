@@ -3,6 +3,8 @@ Analyzes php-code for side-effects.
 When code has no side-effects it can e.g. be used with `eval($code)` in the same process without interfering.
 [Side-effects are classified](https://github.com/staabm/side-effects-detector/blob/main/lib/SideEffect.php) into categories to filter them more easily depending on your use-case.
 
+This library is used e.g. in PHPUnit to [improve performance of PHPT test-cases](https://staabm.github.io/2024/10/19/phpunit-codesprint-munich.html).
+
 ## Install
 
 `composer require staabm/side-effects-detector`

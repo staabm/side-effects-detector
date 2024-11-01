@@ -59,7 +59,8 @@ function runCodeInLocalSandbox(string $code): string
     $code = preg_replace('/^<\?(?:php)?|\?>\s*+$/', '', $code);
     $code = preg_replace('/declare\S?\([^)]+\)\S?;/', '', $code);
 
-    // wrap in immediately invoked function to isolate local-side-effects of $code from our own process
+    // wrap in immediately invoked function to isolate local-side-effects
+    // of $code from our own process
     $code = '(function() {' . $code . '})();';
     
     // wrap in output buffer to isolate stdout side-effects

@@ -72,7 +72,7 @@ function runCodeInLocalSandbox(string $code): string
 function shouldRunInSubprocess(string $code): bool
 {
     $detector    = new SideEffectsDetector;
-    $sideEffects = $detector->getSideEffects($cleanCode);
+    $sideEffects = $detector->getSideEffects($code);
 
     if ($sideEffects === []) {
         return false; // no side-effects

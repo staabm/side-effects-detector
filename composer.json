@@ -18,7 +18,7 @@
     "require-dev": {
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^1.12.7",
-        "phpunit/phpunit": "^9.6.21",
+        "phpunit/phpunit": "^11.4.3",
         "symfony/var-dumper": "^5.4.43",
         "tomasvotruba/type-coverage": "1.0.0",
         "tomasvotruba/unused-public": "1.0.0"

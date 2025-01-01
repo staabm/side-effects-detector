@@ -11,6 +11,15 @@
         </testsuite>
     </testsuites>
 
+    <coverage pathCoverage="true">
+        <include>
+            <directory suffix=".php">lib/</directory>
+        </include>
+        <report>
+            <html outputDirectory="tests/coverage/"/>
+        </report>
+    </coverage>
+
     <php>
         <ini name="memory_limit" value="-1" />
     </php>

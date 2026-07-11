@@ -97,6 +97,11 @@ final class SideEffectsDetector {
                 continue;
             }
             if (in_array($token[0], self::PROCESS_EXIT_TOKENS, true)) {
+                if ($this->isDieWithSkipMessage($tokens, $i)) {
+                    $sideEffects[] = SideEffect::DIE_WITH_SKIP;
+                    continue;
+                }
+
                 $sideEffects[] = SideEffect::PROCESS_EXIT;
                 continue;
             }
@@ -368,5 +373,43 @@ final class SideEffectsDetector {
         ) {
             $index++;
         }
+    }
+
+    private function isDieWithSkipMessage(array $tokens, int $index)
+    {
+        $token = $tokens[$index];
+
+        if (!in_array($token[0], self::PROCESS_EXIT_TOKENS, true)) {
+            throw new \LogicException();
+        }
+
+        if (isset($token[1]) && $token[1] === 'die') {
+            $index++;
+            $this->consumeWhitespaces($tokens, $index);
+
+            if (
+                array_key_exists($index, $tokens)
+                && $tokens[$index] !== '('
+            ) {
+                return false;
+            }
+
+            $index++;
+            $this->consumeWhitespaces($tokens, $index);
+
+            // consume die() 1st arg
+            if (
+                !array_key_exists($index, $tokens)
+                || !is_array($tokens[$index])
+                || $tokens[$index][0] !== T_CONSTANT_ENCAPSED_STRING
+                || !isset($tokens[$index][1])
+            ) {
+                return false;
+            }
+
+            return strncasecmp('skip', ltrim($tokens[$index][1], '"\''), 4) === 0;
+        }
+
+        return false;
     }
 }

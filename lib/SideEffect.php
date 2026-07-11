@@ -7,7 +7,12 @@ namespace staabm\SideEffectsDetector;
  */
 final class SideEffect {
     /**
-     * die, exit, throw.
+     * die("skip requires php 8.1")
+     */
+    const DIE_WITH_SKIP = 'die_with_skip';
+
+    /**
+     * die(), exit, throw.
      */
     const PROCESS_EXIT = 'process_exit';
 

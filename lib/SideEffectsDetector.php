@@ -65,7 +65,7 @@ final class SideEffectsDetector {
         if (!is_array($functionMeta)) {
             throw new \RuntimeException('Invalid function metadata');
         }
-        $this->functionMetadata = $functionMeta;
+        $this->functionMetadata = $functionMeta; // @phpstan-ignore assign.propertyType
 
         if (defined('T_ENUM')) {
             $this->scopePollutingTokens[] = T_ENUM;
@@ -154,7 +154,7 @@ final class SideEffectsDetector {
     /**
      * @return SideEffect::*|null
      */
-    private function getFunctionCallSideEffect(string $functionName): ?string { // @phpstan-ignore return.unusedType
+    private function getFunctionCallSideEffect(string $functionName): ?string {
         if (in_array($functionName, self::STANDARD_OUTPUT_FUNCTIONS, true)) {
             return SideEffect::STANDARD_OUTPUT;
         }

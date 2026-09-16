@@ -8,9 +8,3 @@ parameters:
         methods: true
         properties: true
         constants: true
-
-    type_coverage:
-        return_type: 100
-        param_type: 100
-        property_type: 100
-        print_suggestions: false

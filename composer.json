@@ -19,7 +19,7 @@
         "phpstan/extension-installer": "^1.4.3",
         "phpstan/phpstan": "^2",
         "phpunit/phpunit": "^9.6.21",
-        "symfony/var-dumper": "^5.4.43|| ^6.0 || ^7.0 || ^8.0",
+        "symfony/var-dumper": "^8.1.10",
         "tomasvotruba/unused-public": "^2"
     },
     "config": {

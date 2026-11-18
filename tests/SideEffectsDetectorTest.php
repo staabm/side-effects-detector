@@ -50,7 +50,13 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php vprintf("Hello %s", ["World"]);', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php trigger_error("error $i");', [SideEffect::UNKNOWN_CLASS]];
         yield ['<?php fopen("file.txt");', [SideEffect::INPUT_OUTPUT]];
-        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', [SideEffect::PROCESS_EXIT]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("some message");', [SideEffect::PROCESS_EXIT]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("the skip keyword at wrong position");', [SideEffect::PROCESS_EXIT]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', [SideEffect::DIE_WITH_SKIP]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die ("skip with whitespace1");', [SideEffect::DIE_WITH_SKIP]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die( "skip with whitespace2");', [SideEffect::DIE_WITH_SKIP]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die ( "skip with whitespace3");', [SideEffect::DIE_WITH_SKIP]];
+        yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die(\'skip with single quotes\');', [SideEffect::DIE_WITH_SKIP]];
         yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or echo("skip because attributes are only available since PHP 8.0");', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php die(0);', [SideEffect::PROCESS_EXIT]];
         yield ['<?php exit(0);', [SideEffect::PROCESS_EXIT]];

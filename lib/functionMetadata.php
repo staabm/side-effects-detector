@@ -11,6 +11,12 @@ return [
     'ini_set' => ['hasSideEffects' => true],
     'trigger_error' => ['hasSideEffects' => true],
     'putenv' => ['hasSideEffects' => true],
+    'exec' => ['hasSideEffects' => true],
+    'passthru' => ['hasSideEffects' => true],
+    'pcntl_exec' => ['hasSideEffects' => true],
+    'proc_open' => ['hasSideEffects' => true],
+    'shell_exec' => ['hasSideEffects' => true],
+    'system' => ['hasSideEffects' => true],
     'version_compare' => ['hasSideEffects' => false],
 
     // Intially copied from PHPStan

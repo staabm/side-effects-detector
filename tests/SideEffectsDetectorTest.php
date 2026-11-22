@@ -48,6 +48,13 @@ class SideEffectsDetectorTest extends TestCase {
         yield ['<?php print("Hello World");', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php printf("Hello %s", "World");', [SideEffect::STANDARD_OUTPUT]];
         yield ['<?php vprintf("Hello %s", ["World"]);', [SideEffect::STANDARD_OUTPUT]];
+        yield ['<?php passthru("php script.php");', [SideEffect::UNKNOWN_CLASS]];
+        yield ['<?php exec("php script.php");', [SideEffect::UNKNOWN_CLASS]];
+        yield ['<?php system("php script.php");', [SideEffect::UNKNOWN_CLASS]];
+        yield ['<?php shell_exec("php script.php");', [SideEffect::UNKNOWN_CLASS]];
+        yield ['<?php popen("php script.php", "r");', [SideEffect::UNKNOWN_CLASS]];
+        yield ['<?php proc_open("php script.php", [], $pipes);', [SideEffect::UNKNOWN_CLASS]];
+        yield ['<?php pcntl_exec("/usr/bin/php", ["script.php"]);', [SideEffect::UNKNOWN_CLASS]];
         yield ['<?php trigger_error("error $i");', [SideEffect::UNKNOWN_CLASS]];
         yield ['<?php fopen("file.txt");', [SideEffect::INPUT_OUTPUT]];
         yield ['<?php version_compare(PHP_VERSION, "8.0", ">=") or die("skip because attributes are only available since PHP 8.0");', [SideEffect::PROCESS_EXIT]];
